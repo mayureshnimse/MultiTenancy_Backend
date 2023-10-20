@@ -166,15 +166,12 @@ exports.getCustomerByName = async (req, res) => {
         .json({ message: "Access denied. Insufficient privileges." });
     }
 
-    // If the user is a customer, continue to fetch data
-    if (decoded.username === req.params.username) {
-      const customerTenantConnection = mongoose.createConnection(
-        `mongodb://127.0.0.1:27017/customerTenantDB`,
-        {
-          useNewUrlParser: true,
-          useUnifiedTopology: true,
-        }
-      );
+        // If the user is a customer, continue to fetch data
+        if (decoded.isCustomer) {
+            const customerTenantConnection = mongoose.createConnection(`mongodb://127.0.0.1:27017/customerTenantDB`, {
+                useNewUrlParser: true,
+                useUnifiedTopology: true,
+            });
 
       customerTenantConnection.on("connected", async () => {
         console.log("Connected to CustomerTenant database");
@@ -200,30 +197,22 @@ exports.getCustomerByName = async (req, res) => {
             }
           );
 
-          const Customer = conn.model(
-            "Customer",
-            new mongoose.Schema({
-              // Define your Customer schema here
-            })
-          );
-          const customers = await Customer.find({ username: decoded.username });
-          res.status(200).json(customers);
-          // Don't forget to close the connection when done.
-          conn.close();
-        } else {
-          console.log("Data not found for the provided username.");
-          res
-            .status(404)
-            .json({ message: "Data not found for the provided username." });
+                    const Customer = conn.model('Customer', new mongoose.Schema({
+                        // Define your Customer schema here
+                    }));
+                    const customers = await Customer.find({ username });
+                    res.status(200).json(customers);
+                    // Don't forget to close the connection when done.
+                    conn.close();
+                } else {
+                    console.log('Data not found for the provided username.');
+                    res.status(404).json({ message: 'Data not found for the provided username.' });
+                }
+            });
         }
-      });
-    } else {
-      res
-        .status(404)
-        .json({ message: "Data not found for the provided username." });
+    } catch (error) {
+        console.error('Error fetching customers:', error);
+        res.status(500).json({ message: 'Internal server error.' });
     }
-  } catch (error) {
-    console.error("Error fetching customers:", error);
-    res.status(500).json({ message: "Internal server error." });
-  }
-};
+};;
+
