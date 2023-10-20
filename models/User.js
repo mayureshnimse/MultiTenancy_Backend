@@ -19,7 +19,7 @@ const userSchema = new mongoose.Schema({
     },
     tenantId: {
         type: String,
-        required: true,
+        required: false,
     },
 });
 
